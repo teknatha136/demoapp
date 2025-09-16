@@ -22,7 +22,7 @@ A 3-tier Task Management application for teaching DevOps concepts. Features user
 ┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
 │   Frontend      │    │   Backend       │    │   Database      │
 │                 │    │                 │    │                 │
-│ • HTML/Tailwind │──▶│ • Flask App      │──▶│ • PostgreSQL    │
+│ • HTML/Tailwind │──▶│ • Flask App     │──▶ │ • PostgreSQL    │
 │ • JavaScript    │    │ • SQLAlchemy    │    │ • External VM   │
 │ • AJAX          │    │ • Authentication│    │                 │
 └─────────────────┘    └─────────────────┘    └─────────────────┘

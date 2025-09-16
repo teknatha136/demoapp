@@ -1,3 +1,8 @@
+# First Session 
+
+Learning Git basics
+
+
 # 📋 Task Manager - DevOps Learning Application
 
 A 3-tier Task Management application for teaching DevOps concepts. Features user authentication, task CRUD operations, and modern deployment practices.

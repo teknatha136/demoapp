@@ -88,6 +88,10 @@ docker run -d --name taskmanager-db \
 
 # Run the application
 python app.py
+
+# or
+
+python3 app.py
 ```
 
 ## 🧪 Testing
@@ -150,9 +154,13 @@ task-manager/
 - Use `docker-compose logs -f web` to follow application logs
 - Reset database: `docker-compose down -v && docker-compose up -d`
 - Access pgAdmin at http://localhost:8080 (admin@taskmanager.local / admin123)
-
+  ***
 ---
 
+<<<<<<< HEAD
 Teddy is making changes here.
 
 **Happy Learning! 🚀**
+=======
+**Happy Learning! 🚀**
+>>>>>>> b666e83e61f4fbe4ae3b656a39cf142ace804d20

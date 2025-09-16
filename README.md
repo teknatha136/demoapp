@@ -52,7 +52,7 @@ docker-compose up --build
 ```
 
 ### Database Initialization
-
+The database initialization section
 The application handles database setup automatically:
 
 **For Development (Docker Compose):**

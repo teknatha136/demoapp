@@ -1,8 +1,7 @@
-
-# I have yet again changed the file to be pushed to the main repo  by pradeep
-
 # 📋 Task Manager - DevOps Learning Application
 
+#Pradeep made this change 
+# change made by yeshey
 A 3-tier Task Management application for teaching DevOps concepts. Features user authentication, task CRUD operations, and modern deployment practices. hello its me.
 ![Python](https://img.shields.io/badge/Python-3.11-blue)
 ![Flask](https://img.shields.io/badge/Flask-2.3.3-green)
@@ -10,7 +9,7 @@ A 3-tier Task Management application for teaching DevOps concepts. Features user
 ![Docker](https://img.shields.io/badge/Docker-✓-blue)
 ![Kubernetes](https://img.shields.io/badge/Kubernetes-✓-blue)
 
-## 🌟 Features
+## Features
 - ✅ **User Authentication** - Secure login/registration with password hashing
 - ✅ **Task Management** - Complete CRUD operations for tasks
 - ✅ **Real-time Updates** - AJAX-powered status toggling
@@ -19,13 +18,13 @@ A 3-tier Task Management application for teaching DevOps concepts. Features user
 - ☸️ **Kubernetes Deployments** - Production-ready manifests
 - 🔄 **CI/CD Pipeline** - Automated testing and deployment
 
-## 🏗️ Architecture
+## 🏗️ Architecture ||
 
 ```
 ┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
 │   Frontend      │    │   Backend       │    │   Database      │
 │                 │    │                 │    │                 │
-│ • HTML/Tailwind │──▶│ • Flask App      │──▶│ • PostgreSQL    │
+│ • HTML/Tailwind │──▶│ • Flask App     │──▶ │ • PostgreSQL    │
 │ • JavaScript    │    │ • SQLAlchemy    │    │ • External VM   │
 │ • AJAX          │    │ • Authentication│    │                 │
 └─────────────────┘    └─────────────────┘    └─────────────────┘
@@ -91,6 +90,10 @@ docker run -d --name taskmanager-db \
 
 # Run the application
 python app.py
+
+# or
+
+python3 app.py
 ```
 
 ## 🧪 Testing
@@ -153,7 +156,13 @@ task-manager/
 - Use `docker-compose logs -f web` to follow application logs
 - Reset database: `docker-compose down -v && docker-compose up -d`
 - Access pgAdmin at http://localhost:8080 (admin@taskmanager.local / admin123)
-
+  ***
 ---
 
+<<<<<<< HEAD
 **Happy Learning! 🚀**
+
+# Git demo change added
+=======
+**Happy Learning! 2025🚀**
+>>>>>>> 62477be69a79ef6eac137b32b4fe25ce7734b19d

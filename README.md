@@ -1,3 +1,4 @@
+This is the change made 
 # 📋 Task Manager - DevOps Learning Application
 # change made by yeshey
 A 3-tier Task Management application for teaching DevOps concepts. Features user authentication, task CRUD operations, and modern deployment practices. hello its me.
@@ -22,7 +23,7 @@ A 3-tier Task Management application for teaching DevOps concepts. Features user
 ┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
 │   Frontend      │    │   Backend       │    │   Database      │
 │                 │    │                 │    │                 │
-│ • HTML/Tailwind │──▶│ • Flask App      │──▶│ • PostgreSQL    │
+│ • HTML/Tailwind │──▶│ • Flask App     │──▶ │ • PostgreSQL    │
 │ • JavaScript    │    │ • SQLAlchemy    │    │ • External VM   │
 │ • AJAX          │    │ • Authentication│    │                 │
 └─────────────────┘    └─────────────────┘    └─────────────────┘
@@ -158,9 +159,13 @@ task-manager/
 ---
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 Teddy is making changes here.
 
 **Happy Learning! 🚀**
 =======
 **Happy Learning! 🚀**
 >>>>>>> b666e83e61f4fbe4ae3b656a39cf142ace804d20
+=======
+**Happy Learning! 2025🚀**
+>>>>>>> 713ee7740b964112c7ad0f2de52b79b5286adeb2

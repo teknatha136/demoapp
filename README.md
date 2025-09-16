@@ -1,3 +1,4 @@
+This is the change made 
 # 📋 Task Manager - DevOps Learning Application
 # change made by yeshey
 A 3-tier Task Management application for teaching DevOps concepts. Features user authentication, task CRUD operations, and modern deployment practices. hello its me.
@@ -157,4 +158,10 @@ task-manager/
   ***
 ---
 
-**Happy Learning! 2025🚀;)**
+<<<<<<< HEAD
+**Happy Learning! 🚀**
+
+# Git demo change added
+=======
+**Happy Learning! 2025🚀**
+>>>>>>> 62477be69a79ef6eac137b32b4fe25ce7734b19d

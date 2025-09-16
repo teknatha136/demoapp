@@ -16,7 +16,7 @@ A 3-tier Task Management application for teaching DevOps concepts. Features user
 - ☸️ **Kubernetes Deployments** - Production-ready manifests
 - 🔄 **CI/CD Pipeline** - Automated testing and deployment
 
-## 🏗️ Architecture
+## 🏗️ Architecture ||
 
 ```
 ┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐

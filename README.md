@@ -17,13 +17,13 @@ A 3-tier Task Management application for teaching DevOps concepts. Features user
 - ☸️ **Kubernetes Deployments** - Production-ready manifests
 - 🔄 **CI/CD Pipeline** - Automated testing and deployment
 
-## 🏗️ Architecture
+## 🏗️ Architecture ||
 
 ```
 ┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
 │   Frontend      │    │   Backend       │    │   Database      │
 │                 │    │                 │    │                 │
-│ • HTML/Tailwind │──▶│ • Flask App      │──▶│ • PostgreSQL    │
+│ • HTML/Tailwind │──▶│ • Flask App     │──▶ │ • PostgreSQL    │
 │ • JavaScript    │    │ • SQLAlchemy    │    │ • External VM   │
 │ • AJAX          │    │ • Authentication│    │                 │
 └─────────────────┘    └─────────────────┘    └─────────────────┘
@@ -158,4 +158,4 @@ task-manager/
   ***
 ---
 
-**Happy Learning! 🚀**
+**Happy Learning! 2025🚀**

@@ -2,6 +2,9 @@
 Main Flask application entry point
 Handles app initialization, configuration, and routing
 """
+
+#this is the small change that i am doing
+
 import os
 from flask import Flask, render_template, request, redirect, url_for, flash, jsonify
 from flask_sqlalchemy import SQLAlchemy

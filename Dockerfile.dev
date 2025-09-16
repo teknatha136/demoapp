@@ -1,0 +1,33 @@
+# Development Dockerfile
+# Optimized for development with hot reload and debugging
+FROM python:3.11-slim
+
+# Set working directory
+WORKDIR /app
+
+# Install system dependencies including netcat for database health check
+RUN apt-get update && apt-get install -y \
+    postgresql-client \
+    netcat-traditional \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install Python dependencies
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Copy application files
+COPY . .
+
+# Make start script executable
+RUN chmod +x /app/start-dev.sh
+
+# Expose port
+EXPOSE 8000
+
+# Set environment variables for development
+ENV FLASK_ENV=development
+ENV FLASK_DEBUG=1
+ENV PYTHONPATH=/app
+
+# Start with initialization script
+CMD ["/app/start-dev.sh"]

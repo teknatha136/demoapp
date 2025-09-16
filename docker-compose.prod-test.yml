@@ -1,0 +1,71 @@
+# Docker Compose for Production Testing
+# Mimics production environment with production Dockerfile and settings
+# Use: docker-compose -f docker-compose.prod-test.yml up --build
+
+services:
+  # PostgreSQL Database (Production-like)
+  db:
+    image: postgres:15-alpine
+    container_name: taskmanager_db_prod_test
+    environment:
+      POSTGRES_DB: todoapp_prod
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-secure-prod-password-change-me}
+    ports:
+      - "5433:5432"  # Different port to avoid dev conflicts
+    volumes:
+      - postgres_prod_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d todoapp_prod"]
+      interval: 3s
+      timeout: 3s
+      retries: 3
+    restart: unless-stopped
+    networks:
+      - taskmanager_prod_network
+
+  # Flask Web Application (Production)
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile  # Uses production Dockerfile
+    container_name: taskmanager_web_prod_test
+    environment:
+      # Production environment settings
+      - FLASK_ENV=production
+      - FLASK_DEBUG=0
+      - DATABASE_URL=postgresql://postgres:${DB_PASSWORD:-secure-prod-password-change-me}@db:5432/todoapp_prod
+      - SECRET_KEY=${SECRET_KEY:-prod-secret-key-change-in-real-production-very-secure-key}
+      - PYTHONUNBUFFERED=1
+    ports:
+      - "8000:8000"  # Direct access to Flask app
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 5s
+      timeout: 10s
+      retries: 3
+    networks:
+      - taskmanager_prod_network
+    # No volume mounts - production-like immutable containers
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 512M
+        reservations:
+          cpus: '0.5'
+          memory: 256M
+
+volumes:
+  postgres_prod_data:
+    driver: local
+    name: taskmanager_prod_db
+
+networks:
+  taskmanager_prod_network:
+    driver: bridge
+    name: taskmanager_prod_network

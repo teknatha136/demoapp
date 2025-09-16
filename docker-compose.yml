@@ -1,0 +1,75 @@
+# Docker Compose for Local Development
+# Provides hot reload, volume mounts, and development database
+version: '3.8'
+
+services:
+  # PostgreSQL Database
+  db:
+    image: postgres:15-alpine
+    container_name: taskmanager_db_dev
+    environment:
+      POSTGRES_DB: todoapp
+      POSTGRES_USER: todouser
+      POSTGRES_PASSWORD: todopass
+      POSTGRES_HOST_AUTH_METHOD: md5
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U todouser -d todoapp"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Flask Web Application (Development)
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    container_name: taskmanager_web_dev
+    environment:
+      - FLASK_ENV=development
+      - FLASK_DEBUG=1
+      - DATABASE_URL=postgresql://todouser:todopass@db:5432/todoapp
+      - SECRET_KEY=dev-secret-key-change-in-production-12345
+    ports:
+      - "8000:8000"
+    volumes:
+      # Mount entire app directory for hot reload
+      - .:/app
+      - /app/__pycache__  # Exclude Python cache files
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+
+  # pgAdmin (Database Management Tool) - Optional
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: taskmanager_pgadmin_dev
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@taskmanager.dev
+      PGADMIN_DEFAULT_PASSWORD: admin123
+      PGADMIN_CONFIG_SERVER_MODE: 'False'
+    ports:
+      - "8080:80"
+    depends_on:
+      - db
+    # The 'profiles' key lets you include this service only when running: docker compose --profile <name> up
+    profiles: # 
+      - debug  # Only start with: docker compose --profile debug up
+
+volumes:
+  postgres_data:
+    driver: local
+
+networks:
+  default:
+    name: taskmanager_network

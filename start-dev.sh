@@ -10,7 +10,10 @@ while ! nc -z db 5432; do
 done
 echo "✅ PostgreSQL is ready!"
 
+# Seed development data (user and sample tasks)
+echo "🌱 Seeding development data..."
+python seed-dev-data.py
+
 # Start Flask development server
-# The Flask app will handle database initialization on first request
 echo "🌟 Starting Flask development server..."
 exec python app.py

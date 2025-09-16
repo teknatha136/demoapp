@@ -36,9 +36,9 @@ A 3-tier Task Management application for teaching DevOps concepts. Features user
 
 ### Quick Start
 ```bash
-# Clone and navigate to the project
+# Clone and navigate to the project 
 git clone <repository-url>
-cd task-manager/app
+cd task-manager/app 
 
 # Copy environment variables
 cp .env.example .env
@@ -48,6 +48,7 @@ docker-compose up --build
 
 # Access at http://localhost:8000
 # Demo login: demo / demo123
+# this the chnages 
 ```
 
 ### Database Initialization

@@ -7,7 +7,7 @@ A 3-tier Task Management application for teaching DevOps concepts. Features user
 ![Docker](https://img.shields.io/badge/Docker-✓-blue)
 ![Kubernetes](https://img.shields.io/badge/Kubernetes-✓-blue)
 
-## 🌟 Features
+## Features
 - ✅ **User Authentication** - Secure login/registration with password hashing
 - ✅ **Task Management** - Complete CRUD operations for tasks
 - ✅ **Real-time Updates** - AJAX-powered status toggling
@@ -150,7 +150,7 @@ task-manager/
 - Use `docker-compose logs -f web` to follow application logs
 - Reset database: `docker-compose down -v && docker-compose up -d`
 - Access pgAdmin at http://localhost:8080 (admin@taskmanager.local / admin123)
-
+  ***
 ---
 
 **Happy Learning! 🚀;)**

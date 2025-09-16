@@ -63,7 +63,7 @@ def register():
     if request.method == 'POST':
         username = request.form.get('username', '').strip()
         email = request.form.get('email', '').strip()
-        password = request.form.get('password', '')
+        password = request.form.get('passwordd', '')
         
         # Basic validation
         if not username or not email or not password:

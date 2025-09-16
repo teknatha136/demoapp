@@ -1,4 +1,4 @@
-# Flask and core dependencies
+## Flask and core dependencies
 Flask==2.3.3
 Flask-SQLAlchemy==3.0.5
 Flask-Migrate==4.0.5

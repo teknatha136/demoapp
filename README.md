@@ -160,4 +160,12 @@ task-manager/
   ***
 ---
 
+<<<<<<< HEAD
+**Happy Learning! 🚀**
+
+# Git demo change added
+=======
 **Happy Learning! 2025🚀**
+>>>>>>> 62477be69a79ef6eac137b32b4fe25ce7734b19d
+
+# my features 1

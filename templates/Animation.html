@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Simple Animation Demo</title>
+<style>
+  /* Basic page setup */
+  body {
+    margin: 0;
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: #f0f4f8;
+    font-family: sans-serif;
+  }
+
+  /* Animated circle */
+  .ball {
+    width: 80px;
+    height: 80px;
+    background-color: #3498db;
+    border-radius: 50%;
+    position: relative;
+    animation: slide 4s infinite ease-in-out;
+  }
+
+  /* Keyframes for movement + fade */
+  @keyframes slide {
+    0%   { transform: translateX(-150px); opacity: 0.3; }
+    50%  { transform: translateX(150px);  opacity: 1;   }
+    100% { transform: translateX(-150px); opacity: 0.3; }
+  }
+</style>
+</head>
+<body>
+  <div class="ball"></div>
+</body>
+</html>

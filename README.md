@@ -30,7 +30,7 @@ A 3-tier Task Management application for teaching DevOps concepts. Features user
 └─────────────────┘    └─────────────────┘    └─────────────────┘
 ```
 
-## Local Development Setup
+## Local Development Setups
 
 ### Prerequisites
 - Docker and Docker Compose

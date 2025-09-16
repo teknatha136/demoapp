@@ -7,7 +7,7 @@ A 3-tier Task Management application for teaching DevOps concepts. Features user
 ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-15-blue)
 ![Docker](https://img.shields.io/badge/Docker-✓-blue)
 ![Kubernetes](https://img.shields.io/badge/Kubernetes-✓-blue)
-
+#hello its me
 ## Features
 - ✅ **User Authentication** - Secure login/registration with password hashing
 - ✅ **Task Management** - Complete CRUD operations for tasks

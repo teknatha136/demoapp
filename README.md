@@ -167,4 +167,22 @@ task-manager/
   ***
 ---
 
+<<<<<<< HEAD
 **Happy Learning! 2025🚀**
+=======
+**Happy Learning! 🚀**
+<<<<<<< HEAD
+=======
+# Demo App 🚀
+
+This is a sample Todo App running in Docker.
+
+- Added Docker support
+- Git and SSH integration
+- Updated on 15-Sep-2025
+>>>>>>> 7068096 (Update README with Docker and SSH info)
+>>>>>>> da2a530 (Update: content add)
+
+
+
+Hello

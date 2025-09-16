@@ -12,6 +12,7 @@ from datetime import datetime
 from dotenv import load_dotenv
 
 # Load environment variables
+#Hello my name is cassie🫶🏻
 load_dotenv()
 
 # Initialize Flask app

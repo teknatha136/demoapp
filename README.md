@@ -1,13 +1,12 @@
-This is the change made 
+This is the change made
 # 📋 Task Manager - DevOps Learning Application
-change made by yeshey
 A 3-tier Task Management application for teaching DevOps concepts. Features user authentication, task CRUD operations, and modern deployment practices. hello its me.
 ![Python](https://img.shields.io/badge/Python-3.11-blue)
 ![Flask](https://img.shields.io/badge/Flask-2.3.3-green)
 ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-15-blue)
 ![Docker](https://img.shields.io/badge/Docker-✓-blue)
 ![Kubernetes](https://img.shields.io/badge/Kubernetes-✓-blue)
-
+changes made
 ## Features
 - ✅ **User Authentication** - Secure login/registration with password hashing
 - ✅ **Task Management** - Complete CRUD operations for tasks

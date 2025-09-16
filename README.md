@@ -158,4 +158,4 @@ task-manager/
   ***
 ---
 
-**Happy Learning! 2025🚀**
+**Happy Learning 2025🚀**

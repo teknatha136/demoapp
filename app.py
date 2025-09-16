@@ -14,6 +14,8 @@ from dotenv import load_dotenv
 # Load environment variables
 load_dotenv()
 
+# Added the changes in the comment
+
 # Initialize Flask app
 app = Flask(__name__)
 

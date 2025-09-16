@@ -1,7 +1,6 @@
 # 📋 Task Manager - DevOps Learning Application
 
-A 3-tier Task Management application for teaching DevOps concepts. Features user authentication, task CRUD operations, and modern deployment practices.
-
+A 3-tier Task Management application for teaching DevOps concepts. Features user authentication, task CRUD operations, and modern deployment practices. hello its me.
 ![Python](https://img.shields.io/badge/Python-3.11-blue)
 ![Flask](https://img.shields.io/badge/Flask-2.3.3-green)
 ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-15-blue)

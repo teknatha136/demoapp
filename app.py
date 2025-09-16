@@ -167,7 +167,7 @@ def new_task():
     if request.method == 'POST':
         title = request.form.get('title', '').strip()
         description = request.form.get('description', '').strip()
-        due_date_str = request.form.get('due_date', '')
+        due_date_str = request.form.get('due_date_here', '')
         
         # Validation
         if not title:

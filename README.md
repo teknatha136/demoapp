@@ -88,6 +88,10 @@ docker run -d --name taskmanager-db \
 
 # Run the application
 python app.py
+
+# or
+
+python3 app.py
 ```
 
 ## 🧪 Testing

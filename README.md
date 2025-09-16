@@ -167,4 +167,14 @@ task-manager/
   ***
 ---
 
+<<<<<<< HEAD
+<<<<<<< HEAD
+Teddy is making changes here.
+
+**Happy Learning! 🚀**
+=======
+**Happy Learning! 🚀**
+>>>>>>> b666e83e61f4fbe4ae3b656a39cf142ace804d20
+=======
 **Happy Learning! 2025🚀**
+>>>>>>> 713ee7740b964112c7ad0f2de52b79b5286adeb2

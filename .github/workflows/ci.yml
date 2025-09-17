@@ -87,7 +87,7 @@ jobs:
       - name: Check dependencies for vulnerabilities
         run: |
           pip install -r requirements.txt
-          safety check
+          safety scan
 
       - name: Run security scan on Python code
         run: |

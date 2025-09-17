@@ -236,7 +236,7 @@ jobs:
       uses: actions/checkout@v5
 
     - name: Set up Python
-      uses: actions/setup-python@v4
+      uses: actions/setup-python@v6
       with:
         python-version: ${{ env.PYTHON_VERSION }}
         cache: 'pip'  # Cache pip dependencies for faster builds
@@ -351,7 +351,7 @@ jobs:
     
     steps:
     - name: Set up Python ${{ matrix.python-version }}
-      uses: actions/setup-python@v4
+      uses: actions/setup-python@v6
       with:
         python-version: ${{ matrix.python-version }}
 ```
@@ -748,7 +748,7 @@ jobs:
       uses: actions/checkout@v5
 
     - name: Set up Python
-      uses: actions/setup-python@v4
+      uses: actions/setup-python@v6
       with:
         python-version: ${{ env.PYTHON_VERSION }}
         cache: 'pip'
@@ -782,7 +782,7 @@ jobs:
         check_name: Test Results
 ```
 
-### CD Workflow File (.github/workflows/cd.yml)
+### CD Workflow File (.github/workflows/cd.yaml)
 
 Here's the complete CD workflow for Docker build and deployment:
 
@@ -841,7 +841,7 @@ jobs:
           type=raw,value=latest,enable={{is_default_branch}}
 
     - name: Build and push Docker image
-      uses: docker/build-push-action@v5
+      uses: docker/build-push-action@v6
       with:
         context: .
         file: ./Dockerfile
@@ -902,7 +902,7 @@ mkdir -p .github/workflows
 **Step 3: Create the CD workflow**  
 ```bash
 # Copy the CD workflow content above into:
-.github/workflows/cd.yml
+.github/workflows/cd.yaml
 ```
 
 **Step 4: Set up required secrets**

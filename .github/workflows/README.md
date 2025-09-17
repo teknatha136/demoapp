@@ -11,14 +11,7 @@ This directory contains the GitHub Actions workflow files for the Task Manager a
   - Runs tests with PostgreSQL database
   - Basic Python testing setup
 
-### 2. `docker-build.yml` - Docker Build (Intermediate)
-- **Purpose**: Build and push Docker images to Docker Hub
-- **Triggers**: Push to main branch
-- **Jobs**:
-  - Builds Docker image
-  - Pushes to Docker Hub with latest and SHA tags
-
-### 3. `ci.yml` - Complete CI Pipeline (Advanced)
+### 2. `ci.yml` - Complete CI Pipeline (Advanced)
 - **Purpose**: Comprehensive CI with testing, linting, and security
 - **Triggers**: Push to main/develop, Pull Requests to main
 - **Jobs**:
@@ -26,17 +19,18 @@ This directory contains the GitHub Actions workflow files for the Task Manager a
   - **lint**: Code formatting (Black) and linting (Flake8)
   - **security-scan**: Dependency and code security scanning
 
-### 4. `cd.yml` - Complete CD Pipeline (Production)
-- **Purpose**: Full deployment pipeline with staging and production
+### 3. `cd.yaml` - Complete CD Pipeline (Build & Deploy)
+- **Purpose**: Full build and deployment pipeline combining Docker build with staging and production deployment
 - **Triggers**: Push to main, tags, after CI completion
 - **Jobs**:
-  - **build-and-push**: Multi-platform Docker builds
+  - **check-ci**: Verify CI workflow passed
+  - **build-and-push**: Multi-platform Docker builds and push to Docker Hub
   - **security-scan**: Container vulnerability scanning
   - **deploy-staging**: Deploy to staging environment
   - **deploy-production**: Deploy to production (on tags only)
   - **cleanup**: Clean up old images
 
-## Required Secrets
+## Workflow Files
 
 To use these workflows, add the following secrets in your GitHub repository:
 
@@ -77,13 +71,14 @@ The workflows use PostgreSQL service containers for testing:
 2. Make sure your tests pass locally first
 3. Push code and watch the workflow run
 
-### Intermediate (Docker)
+### Intermediate (Docker Build & Deploy)
 1. Set up Docker Hub secrets (see above)
-2. Use `docker-build.yml` to build and push images
+2. Use `cd.yaml` to build, push images, and deploy
 3. Check Docker Hub for your pushed images
+4. Monitor staging deployments
 
 ### Advanced (Full CI/CD)
-1. Use the complete `ci.yml` and `cd.yml` workflows
+1. Use the complete `ci.yml` and `cd.yaml` workflows
 2. Set up environments for staging/production
 3. Create deployment scripts for your infrastructure
 
@@ -111,13 +106,14 @@ The workflows use PostgreSQL service containers for testing:
 - Fix any test failures
 - Add a new test and see it run
 
-### Exercise 2: Docker Integration
+### Exercise 2: Docker Build & Deploy
 - Set up Docker Hub account and token
-- Enable `docker-build.yml` workflow
+- Enable `cd.yaml` workflow
 - Verify image is pushed to Docker Hub
+- Check staging deployment logs
 
 ### Exercise 3: Advanced Pipeline
-- Implement the complete CI/CD pipeline
+- Implement the complete CI/CD pipeline with `ci.yml` and `cd.yaml`
 - Set up staging environment
 - Deploy using the CD workflow
 

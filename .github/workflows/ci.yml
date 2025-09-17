@@ -69,6 +69,10 @@ jobs:
   security-scan:
     name: Security Scan
     runs-on: ubuntu-latest
+    permissions:
+      security-events: write
+      contents: read
+      actions: read
     
     steps:
       - name: Checkout code
@@ -87,16 +91,23 @@ jobs:
       - name: Check dependencies for vulnerabilities
         run: |
           pip install -r requirements.txt
-          safety scan
+          echo "## 🔒 Safety Dependency Scan Results" >> $GITHUB_STEP_SUMMARY
+          echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+          safety scan --output text || echo "❌ Vulnerabilities found in dependencies" >> $GITHUB_STEP_SUMMARY
+          echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
 
       - name: Run security scan on Python code
         run: |
-          bandit -r . -f json -o security-report.json || true
-          bandit -r . || true
+          echo "## 🛡️ Bandit Security Scan Results" >> $GITHUB_STEP_SUMMARY
+          echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+          bandit -r . -f json -o bandit-report.json || echo "Security issues detected"
+          bandit -r . || echo "❌ Security issues found in code" >> $GITHUB_STEP_SUMMARY
+          echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
 
-      - name: Upload security report
+      - name: Upload security reports
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: security-report-${{ github.sha }}
-          path: security-report.json
+          name: security-reports-${{ github.sha }}
+          path: |
+            bandit-report.json

@@ -447,6 +447,94 @@ docker history taskmanager:prod
 docker images | grep taskmanager
 ```
 
+#### Exercise 4: Publishing Images to Docker Hub
+
+**Why Push to Docker Hub?**
+- **Share your images** with teammates and the community
+- **Deploy anywhere** - pull images on any Docker-enabled system
+- **Version control** for container images
+- **Professional practice** - essential for real-world deployments
+
+**Step 1: Create Docker Hub Account**
+1. Go to [hub.docker.com](https://hub.docker.com)
+2. Sign up for a free account (remember your username!)
+3. Verify your email address
+
+**Step 2: Create a Public Repository**
+1. Click "Create Repository"
+2. Repository name: `taskmanager-workshop`
+3. Description: "Flask Task Manager from DevOps Workshop"
+4. Visibility: **Public** (free tier)
+5. Click "Create"
+
+**Step 3: Login and Tag Your Image**
+```bash
+# Login to Docker Hub (enter your credentials when prompted)
+docker login
+
+# Tag your production image with your Docker Hub username
+# Format: docker tag local-image:tag username/repository:tag
+docker tag taskmanager:prod YOUR_DOCKERHUB_USERNAME/taskmanager-workshop:v1.0.0
+
+# You can also tag as 'latest'
+docker tag taskmanager:prod YOUR_DOCKERHUB_USERNAME/taskmanager-workshop:latest
+
+# Verify the tags were created
+docker images | grep YOUR_DOCKERHUB_USERNAME
+```
+
+**Step 4: Push to Docker Hub**
+```bash
+# Push specific version
+docker push YOUR_DOCKERHUB_USERNAME/taskmanager-workshop:v1.0.0
+
+# Push latest tag
+docker push YOUR_DOCKERHUB_USERNAME/taskmanager-workshop:latest
+
+# View the upload progress
+# This shows the layered nature of Docker images!
+```
+
+**Step 5: Verify and Test**
+```bash
+# Remove local images to test pull
+docker rmi YOUR_DOCKERHUB_USERNAME/taskmanager-workshop:latest
+docker rmi taskmanager:prod
+
+# Pull from Docker Hub (anyone can do this now!)
+docker pull YOUR_DOCKERHUB_USERNAME/taskmanager-workshop:latest
+
+# Run the pulled image
+docker run -p 8000:8000 YOUR_DOCKERHUB_USERNAME/taskmanager-workshop:latest
+```
+
+**Step 6: Share Your Image**
+Your image is now publicly available! Share the pull command:
+```bash
+# Anyone can now run your application with:
+docker pull YOUR_DOCKERHUB_USERNAME/taskmanager-workshop:latest
+docker run -p 8000:8000 YOUR_DOCKERHUB_USERNAME/taskmanager-workshop:latest
+```
+
+**Best Practices for Image Naming:**
+```bash
+# Use semantic versioning
+docker tag myapp:latest username/myapp:v1.2.3
+
+# Include environment info
+docker tag myapp:prod username/myapp:production
+docker tag myapp:dev username/myapp:development  
+
+# Use meaningful tags
+docker tag myapp:latest username/myapp:2025-workshop
+```
+
+**Real-world Applications:**
+- **CI/CD Pipelines:** Automatically build and push images
+- **Team Collaboration:** Share consistent development environments
+- **Deployment:** Pull production images on servers
+- **Version Management:** Tag releases for rollback capabilities
+
 ### Docker Networking, Volumes & Environment Management
 
 #### Container Networking Basics
@@ -561,7 +649,7 @@ SECRET_KEY=prod-secret-key-change-in-real-production-very-secure-key-67890
 # FLASK_DEBUG=0 (already set in docker-compose)
 ```
 
-#### Exercise 4: Manual Multi-Container Setup
+#### Exercise 5: Manual Multi-Container Setup
 
 **Step 1: Start Database Container**
 ```bash
@@ -733,7 +821,7 @@ docker-compose --profile debug up
 # Password: admin123
 ```
 
-#### Exercise 5: Docker Compose in Action
+#### Exercise 6: Docker Compose in Action
 
 **Step 1: Basic Compose Operations**
 ```bash
@@ -814,7 +902,7 @@ docker-compose up --scale web=3
 - **Resource limits** and health checks
 - **No debugging tools** or exposed internal ports
 
-#### Exercise 6: Compare Development vs Production
+#### Exercise 7: Compare Development vs Production
 
 **Development Compose File:**
 ```yaml
@@ -952,6 +1040,9 @@ kubectl scale deployment taskmanager --replicas=10
 Each student should have:
 - [ ] Built at least 2 Docker images (basic and optimized)
 - [ ] Run containers with port mapping and environment variables
+- [ ] Created a Docker Hub account and public repository
+- [ ] Tagged and pushed production image to Docker Hub
+- [ ] Successfully pulled and run their image from Docker Hub
 - [ ] Created a working docker-compose.yml file
 - [ ] Successfully run multi-container application (Flask + PostgreSQL)
 - [ ] Logged in to the application using default development credentials (demo/demo123)
@@ -963,7 +1054,8 @@ Each student should have:
 2. **Containers are lightweight** compared to VMs
 3. **Docker Compose simplifies** multi-container applications  
 4. **Multi-stage builds optimize** production images
-5. **Environment-specific configurations** enable flexible deployments
+5. **Docker Hub enables image sharing** and distribution
+6. **Environment-specific configurations** enable flexible deployments
 
 ### Preparation for Day 3 (Kubernetes)
 - [ ] Understand that containers need orchestration at scale

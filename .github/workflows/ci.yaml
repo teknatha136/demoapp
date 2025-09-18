@@ -1,0 +1,140 @@
+name: CI Pipeline
+
+on:
+  push:
+    branches: [ main, cicd ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  test:
+    name: Run Tests
+    runs-on: ubuntu-latest
+    permissions:
+      checks: write
+      pull-requests: write
+    services:
+      postgres:
+        image: postgres:15-alpine
+        env:
+          POSTGRES_USER: test_user
+          POSTGRES_PASSWORD: test_pass
+          POSTGRES_DB: test_db
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v5
+
+    - name: Set up Python
+      uses: actions/setup-python@v6
+      with:
+        python-version: 3.11
+        cache: 'pip'
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+        pip install pytest pytest-flask pytest-github-actions-annotate-failures
+
+    - name: Run tests
+      env:
+        DATABASE_URL: postgresql://test_user:test_pass@localhost:5432/test_db
+        SECRET_KEY: test-secret-key-for-ci
+        FLASK_ENV: testing
+      run: |
+        pytest --tb=short -v --junitxml=test-results.xml
+
+    - name: Upload test results
+      uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: test-results-${{ github.sha }}
+        path: test-results.xml
+
+    - name: Publish Test Results
+      uses: EnricoMi/publish-unit-test-result-action@v2
+      if: always()
+      with:
+        files: test-results.xml
+        check_name: Test Results
+
+  security-scan:
+    name: Security Scan
+    runs-on: ubuntu-latest
+    permissions:
+      security-events: write
+      contents: read
+      actions: read
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v5
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Run Safety scan for dependency vulnerabilities
+        uses: pyupio/safety-action@v1
+        with:
+          api-key: ${{ secrets.SAFETY_API_KEY }}
+        continue-on-error: true
+
+      - name: Run Bandit security scan
+        uses: tj-actions/bandit@v5.5
+        with:
+          targets: "."
+          options: "-r -f json -o bandit-report.json"
+        continue-on-error: true
+
+      - name: Generate additional reports
+        if: always()
+        run: |
+          # Generate human-readable summary
+          echo "## 🛡️ Security Scan Summary" >> $GITHUB_STEP_SUMMARY
+          echo "### Bandit Results:" >> $GITHUB_STEP_SUMMARY
+          if [ -f bandit-report.json ]; then
+            echo "✅ Bandit scan completed - check artifacts for detailed results" >> $GITHUB_STEP_SUMMARY
+            
+            # Try to show a brief summary from JSON
+            if command -v jq > /dev/null 2>&1; then
+              ISSUE_COUNT=$(jq '.results | length' bandit-report.json 2>/dev/null || echo "0")
+              echo "📊 **Issues found:** $ISSUE_COUNT" >> $GITHUB_STEP_SUMMARY
+              
+              if [ "$ISSUE_COUNT" != "0" ] && [ "$ISSUE_COUNT" != "" ]; then
+                echo "" >> $GITHUB_STEP_SUMMARY
+                echo "**Top issues:**" >> $GITHUB_STEP_SUMMARY
+                jq -r '.results[:3] | .[] | "- **\(.test_name)** in `\(.filename):\(.line_number)` - \(.issue_severity) severity"' bandit-report.json 2>/dev/null >> $GITHUB_STEP_SUMMARY || echo "- Check artifacts for detailed issue list" >> $GITHUB_STEP_SUMMARY
+              fi
+            fi
+          else
+            echo "❌ Bandit scan failed - check logs above" >> $GITHUB_STEP_SUMMARY
+          fi
+          
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Safety Results:" >> $GITHUB_STEP_SUMMARY
+          echo "✅ Safety dependency scan completed" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "📋 **Full reports available in artifacts below**" >> $GITHUB_STEP_SUMMARY
+
+      - name: Upload security reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: security-reports-${{ github.sha }}
+          path: |
+            bandit-report.json

@@ -1,0 +1,28 @@
+name: Hello World Workflow
+
+# Trigger on push to any branch
+on: [push]
+
+jobs:
+  greet:
+    name: Greeting Job
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v5
+        
+      - name: Say hello
+        run: |
+          echo "Hello from GitHub Actions!"
+          echo "Repository: ${{ github.repository }}"
+          echo "Branch: ${{ github.ref_name }}"
+          echo "Commit SHA: ${{ github.sha }}"
+          
+      - name: Show environment
+        run: |
+          echo "Runner OS: ${{ runner.os }}"
+          echo "Available tools:"
+          python --version
+          node --version
+          docker --version

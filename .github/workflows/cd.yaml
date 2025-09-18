@@ -30,7 +30,7 @@ jobs:
           push: true
           tags: |
             ${{ vars.DOCKER_USERNAME }}/task-manager:latest
-            ${{ secrets.DOCKER_USERNAME }}/task-manager:${{ github.sha }}
+            ${{ vars.DOCKER_USERNAME }}/task-manager:${{ github.sha }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
 

@@ -1,0 +1,14 @@
+name: Simple Workflow
+on: [push, pull_request]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Print messages
+        run: |
+          echo "Step 1: Workflow started"
+          echo "Step 2: Running checks"
+          echo "Step 3: Done!"
+

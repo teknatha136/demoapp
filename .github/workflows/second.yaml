@@ -4,7 +4,7 @@ on: [push]
 
 jobs:
   greet:
-    name: Greeting Job
+    name: Details Job
     runs-on: ubuntu-latest
 
     steps:

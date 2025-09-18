@@ -1,0 +1,16 @@
+
+name: Node Test Workflow
+
+on: [push]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: "20"
+
+      - name: Say hello
+        run: node -e "console.log('🎉 Hello from Node.js!')"

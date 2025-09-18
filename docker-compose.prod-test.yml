@@ -34,7 +34,7 @@ services:
       # Production environment settings
       - FLASK_ENV=production
       - FLASK_DEBUG=0
-      - DATABASE_URL=postgresql://postgres:${DB_PASSWORD:-secure-prod-password-change-me}@db:5433/todoapp_prod
+      - DATABASE_URL=postgresql://postgres:${DB_PASSWORD:-secure-prod-password-change-me}@db:5432/todoapp_prod
       - SECRET_KEY=${SECRET_KEY:-prod-secret-key-change-in-real-production-very-secure-key}
       - PYTHONUNBUFFERED=1
     ports:

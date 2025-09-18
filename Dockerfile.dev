@@ -1,4 +1,4 @@
-# Development Dockerfile  
+# Development Dockerfile
 # Optimized for development with hot reload and debugging
 FROM python:3.11-slim
 

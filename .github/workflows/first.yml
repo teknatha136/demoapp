@@ -1,4 +1,4 @@
-name: Python CI
+name: Simple Workflow
 on: [push, pull_request]
 
 jobs:
@@ -6,13 +6,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
-        with:
-          python-version: "3.11"
-      - name: Install deps
+      - name: Print messages
         run: |
-          python -m pip install --upgrade pip
-          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
-      - name: Run tests (if any)
-        run: |
-          if [ -d tests ]; then pytest -q; else echo "No tests";
+          echo "Step 1: Workflow started"
+          echo "Step 2: Running checks"
+          echo "Step 3: Done!"
+

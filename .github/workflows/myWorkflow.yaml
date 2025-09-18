@@ -2,9 +2,9 @@ name: DemoApp CI
 
 on:
   push:
-    branches: [ main ]
+    branches: [ cicd ]
   pull_request:
-    branches: [ main ]
+    branches: [ cicd ]
 
 jobs:
   build-and-test:

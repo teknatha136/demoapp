@@ -3,7 +3,7 @@ name: Hello World Workflow
 on:
   push:
     branches:
-      - main
+      - cicd
 
 jobs:
   greet:

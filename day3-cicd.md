@@ -73,6 +73,8 @@ Developer → Small change → Automated tests → Automated deployment → Imme
 
 ### GitHub Actions Architecture
 
+### GitHub Actions Architecture
+
 #### Key Components
 
 **Workflows:**
@@ -100,10 +102,120 @@ Developer → Small change → Automated tests → Automated deployment → Imme
 - GitHub provides Ubuntu, Windows, and macOS runners
 - Can also use self-hosted runners
 
+#### Who Creates Actions?
+
+**GitHub (Official Actions):**
+- `actions/checkout` - Check out repository code
+- `actions/setup-python` - Set up Python environment
+- `actions/upload-artifact` - Upload build artifacts
+
+**Third-party Companies:**
+- `docker/build-push-action` - Docker Inc.
+- `aws-actions/configure-aws-credentials` - Amazon
+- `azure/login` - Microsoft
+
+**Community Contributors:**
+- Open source developers
+- Individual maintainers
+- Available on [GitHub Marketplace](https://github.com/marketplace?type=actions)
+
+**Your Organization:**
+- Create custom actions for internal use
+- Share privately within your organization
+- Composite actions combining multiple steps
+
+#### Types of Triggers (`on:`)
+
+**Push Events:**
+```yaml
+on:
+  push:
+    branches: [ main, develop ]    # Specific branches
+    tags: [ 'v*' ]                # Tag patterns
+    paths: [ 'src/**' ]           # Only when certain files change
+```
+
+**Pull Request Events:**
+```yaml
+on:
+  pull_request:
+    branches: [ main ]
+    types: [opened, synchronize, reopened, closed]
+```
+
+**Scheduled Events:**
+```yaml
+on:
+  schedule:
+    - cron: '0 2 * * *'  # Daily at 2 AM UTC
+    - cron: '0 0 * * 0'  # Weekly on Sunday
+```
+
+**Manual Triggers:**
+```yaml
+on:
+  workflow_dispatch:        # Manual trigger from UI
+    inputs:
+      environment:
+        description: 'Environment to deploy'
+        required: true
+        default: 'staging'
+```
+
+**External Events:**
+```yaml
+on:
+  repository_dispatch:      # Triggered by external API calls
+    types: [deploy-prod]
+  
+  workflow_run:            # After another workflow completes
+    workflows: ["CI"]
+    types: [completed]
+```
+
+**Issue/PR Events:**
+```yaml
+on:
+  issues:
+    types: [opened, labeled]
+  pull_request_review:
+    types: [submitted]
+```
+
+**Release Events:**
+```yaml
+on:
+  release:
+    types: [published, created]
+```
+
+#### Action Types
+
+**JavaScript Actions:**
+- Run directly on runners
+- Fast execution
+- Good for simple logic
+
+**Docker Actions:**
+- Run in containers
+- More isolated
+- Can use any programming language
+
+**Composite Actions:**
+- Combine multiple steps
+- Reusable workflows
+- Written in YAML
+
 #### Workflow Syntax Example
 ```yaml
 name: My Workflow
-on: [push, pull_request]
+on: 
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  schedule:
+    - cron: '0 2 * * *'  # Daily at 2 AM
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -112,6 +224,32 @@ jobs:
       - name: Run a command
         run: echo "Hello World"
 ```
+
+#### GitHub Actions Ecosystem
+
+**Marketplace Benefits:**
+- **Thousands of pre-built actions** - Don't reinvent the wheel
+- **Community tested** - Popular actions are battle-tested
+- **Continuous updates** - Maintained by creators and community
+- **Easy integration** - One line to add powerful functionality
+
+**Action Versioning:**
+```yaml
+# Use specific version (recommended for production)
+uses: actions/checkout@v5
+
+# Use major version (gets patches automatically)  
+uses: actions/checkout@v4
+
+# Use branch (not recommended)
+uses: actions/checkout@main
+```
+
+**Security Considerations:**
+- **Pin to specific versions** for critical workflows
+- **Review third-party actions** before using
+- **Use only trusted publishers** when possible
+- **Check action source code** for sensitive operations
 
 ### Exercise 1: Your First GitHub Actions Workflow
 

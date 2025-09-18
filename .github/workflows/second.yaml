@@ -8,9 +8,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Setup Node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version: "20"
+        uses: actions/setup-node@v5
 
       - name: Say hello
-        run: node -e "console.log('🎉 Hello from Node.js!')"
+        run: node -e "console.log('Hello from Node.js!')"

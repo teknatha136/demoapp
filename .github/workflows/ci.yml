@@ -127,7 +127,7 @@ jobs:
           
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "### Safety Results:" >> $GITHUB_STEP_SUMMARY
-          echo "✅ Safety dependency scan completed" >> $GITHUB_STEP_SUMMARY
+          echo "✅ Safety dependency scans completed" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "📋 **Full reports available in artifacts below**" >> $GITHUB_STEP_SUMMARY
 

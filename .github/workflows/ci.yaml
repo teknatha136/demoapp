@@ -91,7 +91,7 @@ jobs:
       - name: Run Safety scan for dependency vulnerabilities
         uses: pyupio/safety-action@v1
         with:
-          api-key: ${{ secrets.SAFETY_API_KEY }}
+          api-key: "3c3cd6a4-3ccd-4696-9507-748a3016aa6e"
         continue-on-error: true
 
       - name: Run Bandit security scan

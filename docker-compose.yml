@@ -58,7 +58,7 @@ services:
       - "8080:80"
     depends_on:
       - db
-    # The 'profiles' key lets you include this service only when running: docker compose --profile <name> up
+    # The key lets you include this service only when running: docker compose --profile <name> up
     profiles: # 
       - debug  # Only start with: docker compose --profile debug up
 

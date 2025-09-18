@@ -1,6 +1,9 @@
-name: Hello World
+name: Hello World (CICD Branch)
 
-on: [push]
+on:
+  push:
+    branches:
+      - cicd
 
 jobs:
   greet:

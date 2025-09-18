@@ -1,0 +1,43 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:15-alpine
+        env:
+          POSTGRES_DB: todoapp
+          POSTGRES_USER: todouser
+          POSTGRES_PASSWORD: todopass
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd="pg_isready -U todouser -d todoapp"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Run tests
+        env:
+          DATABASE_URL: postgresql://todouser:todopass@localhost:5432/todoapp
+          SECRET_KEY: test-secret-key
+        run: pytest --maxfail=1 --disable-warnings -v

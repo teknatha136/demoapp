@@ -1,24 +1,22 @@
-name: Caching Primes
+# .github/workflows/simple-python.yml
+name: Minimal Python Workflow
 
-on: push
+on: [push, pull_request]
 
 jobs:
   build:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v5
+      # Step 1: Checkout repository
+      - uses: actions/checkout@v5
 
-    - name: Cache Primes
-      id: cache-primes
-      uses: actions/cache@v4
-      with:
-        path: prime-numbers
-        key: ${{ runner.os }}-primes
+      # Step 2: Set up Python
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: 3.11
 
-    - name: Generate Prime Numbers
-      if: steps.cache-primes.outputs.cache-hit != 'true'
-      run: /generate-primes.sh -d prime-numbers
-
-    - name: Use Prime Numbers
-      run: /primes.sh -d prime-numbers
+      # Step 3: Show Python version
+      - name: Python version
+        run: python --version

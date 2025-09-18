@@ -1,0 +1,16 @@
+name: Simple Workflow
+
+on:
+  push:
+    branches: [ "main" ]
+
+jobs:
+  say-hello:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v5
+
+      - name: Say hello
+        run: echo "Hello, this is my first simple workflow!"

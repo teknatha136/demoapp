@@ -1,4 +1,4 @@
-name: CD Pipeline - Build & Deploy
+name: CD Pipeline - Build & Deploy to Kubernetes
 
 on:
   push:
@@ -8,6 +8,9 @@ jobs:
   build-and-push:
     name: Build and Push Docker Image
     runs-on: ubuntu-latest
+    
+    outputs:
+      image-tag: ${{ steps.image-info.outputs.image-tag }}
     
     steps:
       - name: Checkout code
@@ -34,14 +37,75 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
-      - name: Image info
+      - name: Set image output
+        id: image-info
         run: |
+          echo "image-tag=${{ vars.DOCKER_USERNAME }}/task-manager:${{ github.sha }}" >> $GITHUB_OUTPUT
           echo "🚀 Docker image built and pushed successfully!"
           echo "📦 Repository: ${{ vars.DOCKER_USERNAME }}/task-manager"
           echo "🏷️  Tags: latest, ${{ github.sha }}"
-          echo ""
-          echo "⚡ Quick start command:"
-          echo "docker pull ${{ vars.DOCKER_USERNAME }}/task-manager:latest"
-          echo "docker run -p 8000:8000 ${{ vars.DOCKER_USERNAME }}/task-manager:latest"
-          echo ""
-          echo "🔗 View on Docker Hub: https://hub.docker.com/r/${{ vars.DOCKER_USERNAME }}/task-manager"
+
+  deploy-to-kubernetes:
+    name: Deploy to Kubernetes
+    runs-on: ubuntu-latest
+    needs: build-and-push
+    if: github.ref == 'refs/heads/main'
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v5
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          fetch-depth: 0
+
+      - name: Set up kubectl
+        uses: azure/setup-kubectl@v4
+
+      - name: Configure kubeconfig
+        run: |
+          mkdir -p ~/.kube
+          echo "${{ secrets.KUBE_CONFIG }}" | base64 -d > ~/.kube/config
+          chmod 600 ~/.kube/config
+
+      - name: Update Kubernetes manifests
+        run: |
+          # Update the image tag in the taskmanager deployment
+          yq eval '.spec.template.spec.containers[0].image = "${{ needs.build-and-push.outputs.image-tag }}"' -i k8s/03-taskmanager.yaml
+          
+          # Verify the change
+          echo "Updated image in k8s/03-taskmanager.yaml:"
+          yq eval '.spec.template.spec.containers[0].image' k8s/03-taskmanager.yaml
+
+      - name: Commit and push updated manifests
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git add k8s/03-taskmanager.yaml
+          if git diff --staged --quiet; then
+            echo "No changes to commit"
+          else
+            git commit -m "Update image to ${{ needs.build-and-push.outputs.image-tag }}"
+            git push
+            echo "✅ Updated Kubernetes manifest committed and pushed"
+          fi
+
+      - name: Deploy to Kubernetes
+        run: |
+          # Deploy the application using the manifests
+          echo "Deploying application to Kubernetes..."
+          
+          # Apply all Kubernetes manifests
+          kubectl apply -f k8s/
+          
+          # Wait for rollout to complete
+          kubectl rollout status deployment/taskmanager-deployment --timeout=300s
+          
+          # Verify deployment
+          kubectl get pods -l app=taskmanager
+
+      - name: Deployment Summary
+        run: |
+          echo "🎉 Deployment completed successfully!"
+          echo "📦 Image: ${{ needs.build-and-push.outputs.image-tag }}"
+          echo "🏷️ Git SHA: ${{ github.sha }}"
+          echo "🔧 Check status: kubectl get all"

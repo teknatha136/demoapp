@@ -1,0 +1,15 @@
+# ConfigMap - Stores non-sensitive configuration data as key-value pairs
+# ConfigMaps separate configuration from application code
+apiVersion: v1              # API version for ConfigMap
+kind: ConfigMap            # Resource type - stores configuration data
+metadata:                  # Information about this ConfigMap
+  name: app-config         # Name of the ConfigMap
+  namespace: STUDENT_NUMBER       # Kubernetes namespace (default if not specified)
+  labels:                  # Labels to organize this resource
+    app: task-manager
+    type: configuration
+data:                      # Configuration data as key-value pairs (all values must be strings)
+  # Application settings
+  DEBUG_MODE: "false"      # Enable/disable debug mode
+  LOG_LEVEL: "INFO"        # Logging level (DEBUG, INFO, WARN, ERROR)
+  MAX_CONNECTIONS: "100"   # Maximum database connections

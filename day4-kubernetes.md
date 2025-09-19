@@ -12,8 +12,9 @@ By the end of this session, you will be able to:
 - Understand what Kubernetes is and why it's essential for modern applications
 - Explain the difference between Docker and Kubernetes
 - Set up a local Kubernetes environment using minikube or kind
-- Deploy your Task Manager application to Kubernetes
+- Deploy your Task Manager application to Kubernetes with personal namespace isolation
 - Understand basic Kubernetes concepts (Pods, Services, Deployments)
+- Use kubectl effectively with namespace contexts
 - Connect Kubernetes deployments to CI/CD pipelines (if time permits)
 - Troubleshoot common Kubernetes issues
 
@@ -84,15 +85,15 @@ docker-compose up  # Runs on one machine
 
 ### Kubernetes vs Docker: Understanding the Difference
 
-| Aspect | Docker | Docker Compose | Kubernetes |
-|--------|--------|----------------|------------|
-| **Scope** | Single container | Multiple containers (one machine) | Multiple containers (multiple machines) |
-| **Use Case** | Development/Testing | Local development | Production at scale |
-| **High Availability** | No | No | Yes |
-| **Auto-scaling** | No | No | Yes |
-| **Self-healing** | No | Limited | Yes |
-| **Load Balancing** | Manual | Basic | Advanced |
-| **Complexity** | Simple | Medium | Complex |
+| Aspect                | Docker              | Docker Compose                    | Kubernetes                              |
+| --------------------- | ------------------- | --------------------------------- | --------------------------------------- |
+| **Scope**             | Single container    | Multiple containers (one machine) | Multiple containers (multiple machines) |
+| **Use Case**          | Development/Testing | Local development                 | Production at scale                     |
+| **High Availability** | No                  | No                                | Yes                                     |
+| **Auto-scaling**      | No                  | No                                | Yes                                     |
+| **Self-healing**      | No                  | Limited                           | Yes                                     |
+| **Load Balancing**    | Manual              | Basic                             | Advanced                                |
+| **Complexity**        | Simple              | Medium                            | Complex                                 |
 
 **Think of it this way:**
 - **Docker** = A single shipping container
@@ -205,51 +206,74 @@ spec:
 - Services provide stable endpoints
 - Load balance traffic across multiple pods
 
-### Exercise 1: Setting Up Local Kubernetes
+### Exercise 1: Setting Up Kubernetes Access
 
-#### Option A: minikube (Recommended for beginners)
+#### Setting Up Your Kubeconfig
+You will be provided with a kubeconfig file.
+A `kubeconfig` file is a YAML-formatted configuration file that organizes information about Kubernetes clusters, users, namespaces, and authentication mechanisms. It is used by Kubernetes client tools, such as kubectl, to access and interact with Kubernetes clusters.
+
 ```bash
-# Install minikube (macOS)
-brew install minikube
+# Create .kube directory if it doesn't exist
+mkdir -p ~/.kube
 
-# Start your local Kubernetes cluster
-minikube start
+# Copy the provided kubeconfig file
+# Your instructor will give you: kubeconfig-student-XXXX
+cp kubeconfig-student-$STUDENT_NUMBER ~/.kube/config
 
-# Verify cluster is running
+# Or set KUBECONFIG environment variable (alternative method)
+export KUBECONFIG=/path/to/kubeconfig-student-$STUDENT_NUMBER
+
+# Verify cluster access
 kubectl cluster-info
 kubectl get nodes
 ```
 
-#### Option B: kind (Kubernetes in Docker)
+#### Setting Up Your Personal Namespace Context
+To avoid typing `-n student-STUDENT_NUMBER` with every command, set up a namespace context:
+
 ```bash
-# Install kind
-brew install kind
+# Method 1: Set namespace as default for current context
+kubectl config set-context --current --namespace=student-$STUDENT_NUMBER
 
-# Create a cluster
-kind create cluster --name workshop
+# Method 2: Create a new context with your namespace (recommended)
+kubectl config set-context student-$STUDENT_NUMBER \
+  --cluster=$(kubectl config current-context) \
+  --user=$(kubectl config current-context) \
+  --namespace=student-$STUDENT_NUMBER
 
-# Verify
-kubectl cluster-info --context kind-workshop
+# Switch to your personal context
+kubectl config use-context student-$STUDENT_NUMBER
+
+# Verify your context and namespace
+kubectl config current-context
+kubectl config get-contexts
+
+# Test - these commands now work in your namespace without -n flag
+kubectl get pods        # Instead of: kubectl get pods -n student-STUDENT_NUMBER
+kubectl get services    # Instead of: kubectl get services -n student-STUDENT_NUMBER
+kubectl get all        # Shows only your resources
 ```
 
-#### Option C: Docker Desktop (If you have it)
+#### Useful Context Management Commands
 ```bash
-# Enable Kubernetes in Docker Desktop settings
-# Then verify:
-kubectl cluster-info
-```
+# View all available contexts
+kubectl config get-contexts
 
-#### Verify Your Setup
-```bash
-# Check cluster status
-kubectl get nodes
+# Switch between contexts
+kubectl config use-context <context-name>
 
-# Expected output:
-NAME       STATUS   ROLES           AGE   VERSION
-minikube   Ready    control-plane   1m    v1.28.3
+# View current context
+kubectl config current-context
 
-# Check available resources
-kubectl get all --all-namespaces
+# Get current namespace
+kubectl config view --minify -o jsonpath='{..namespace}'
+
+# Switch back to default namespace (if needed)
+kubectl config set-context --current --namespace=default
+
+# Create an alias for quick context switching (optional)
+alias kctx='kubectl config use-context'
+alias kns='kubectl config set-context --current --namespace'
 ```
 
 ---
@@ -258,222 +282,217 @@ kubectl get all --all-namespaces
 
 ### Exercise 2: Your First Pod
 
-Let's start with a simple example before deploying our Task Manager app.
+Let's start with understanding the basic building block of Kubernetes - the Pod.
 
-#### Step 1: Create a Simple Pod
-Create `k8s/01-hello-pod.yaml`:
-```yaml
-apiVersion: v1
-kind: Pod
-metadata:
-  name: hello-kubernetes
-  labels:
-    app: hello
-spec:
-  containers:
-  - name: hello-container
-    image: nginx:alpine
-    ports:
-    - containerPort: 80
-    env:
-    - name: MESSAGE
-      value: "Hello from Kubernetes!"
+#### Step 1: Explore the Learning Directory
+```bash
+# Navigate to the learning materials
+cd k8s-intro
+
+# View the simple Pod example
+cat hello-pod.yaml
 ```
 
-#### Step 2: Deploy the Pod
+#### Step 2: Create Your First Pod
 ```bash
-# Create the pod
-kubectl apply -f k8s/01-hello-pod.yaml
+# Create the pod with detailed comments
+kubectl apply -f hello-pod.yaml
 
 # Check if it's running
 kubectl get pods
 
 # Expected output:
-NAME               READY   STATUS    RESTARTS   AGE
-hello-kubernetes   1/1     Running   0          30s
+NAME        READY   STATUS    RESTARTS   AGE
+hello-pod   1/1     Running   0          30s
 
-# Get more details
-kubectl describe pod hello-kubernetes
+# Get more details about the Pod
+kubectl describe pod hello-pod
 
-# Check logs
-kubectl logs hello-kubernetes
+# Check logs from the container
+kubectl logs hello-pod
 ```
 
 #### Step 3: Access the Pod
 ```bash
 # Forward port to access the pod
-kubectl port-forward hello-kubernetes 8080:80
+kubectl port-forward hello-pod 8080:80
 
 # In another terminal or browser, visit:
 # http://localhost:8080
+# You should see the nginx welcome page
 ```
 
-#### Step 4: Clean up
+#### Step 4: Explore Inside the Pod
 ```bash
-kubectl delete pod hello-kubernetes
+# Execute commands inside the running container
+kubectl exec hello-pod -- ls /usr/share/nginx/html
+
+# Get an interactive shell inside the container
+kubectl exec -it hello-pod -- /bin/sh
+# Now you're inside! Try:
+# - env | grep WELCOME
+# - ps aux
+# - exit (to leave the container)
+```
+
+#### Step 5: Clean up
+```bash
+kubectl delete pod hello-pod
 ```
 
 ### Exercise 3: Deploying Task Manager to Kubernetes
 
-Now let's deploy our actual Task Manager application that we've been working with.
+Now let's deploy our actual Task Manager application. Since PostgreSQL is running on a VM, we'll only deploy the application to Kubernetes and configure it to connect to the external database.
 
-#### Step 1: Create Kubernetes Manifests Directory
+**Important**: Each student will deploy to their own namespace using their student number to avoid conflicts.
+
+#### Step 1: Set Up Your Student Environment
 ```bash
-mkdir -p k8s
+# Set your personal information (replace with your actual details)
+export STUDENT_NUMBER=0215539  # 📝 Replace with YOUR student number
+export DOCKERHUB_USERNAME=your-dockerhub-username  # 📝 Replace with YOUR username
+export VM_IP=192.168.1.100     # 📝 Replace with the actual VM IP
+
+# Navigate to the Kubernetes directory
 cd k8s
-```
 
-#### Step 2: PostgreSQL Database Deployment
-Create `k8s/02-postgres.yaml`:
-```yaml
-# PostgreSQL Deployment
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: postgres-deployment
-spec:
-  replicas: 1
-  selector:
-    matchLabels:
-      app: postgres
-  template:
-    metadata:
-      labels:
-        app: postgres
-    spec:
-      containers:
-      - name: postgres
-        image: postgres:15
-        env:
-        - name: POSTGRES_DB
-          value: taskmanager
-        - name: POSTGRES_USER
-          value: dbuser
-        - name: POSTGRES_PASSWORD
-          value: dbpass123
-        ports:
-        - containerPort: 5432
-        volumeMounts:
-        - name: postgres-storage
-          mountPath: /var/lib/postgresql/data
-      volumes:
-      - name: postgres-storage
-        emptyDir: {}
----
-# PostgreSQL Service
-apiVersion: v1
-kind: Service
-metadata:
-  name: postgres-service
-spec:
-  selector:
-    app: postgres
-  ports:
-  - port: 5432
-    targetPort: 5432
-  type: ClusterIP
+# Verify your environment variables
+echo "Student Number: $STUDENT_NUMBER"
+echo "DockerHub Username: $DOCKERHUB_USERNAME"  
+echo "VM IP: $VM_IP"
 ```
-
-#### Step 3: Task Manager Application Deployment
-Create `k8s/03-taskmanager.yaml`:
-```yaml
-# Task Manager Deployment
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: taskmanager-deployment
-spec:
-  replicas: 2  # Run 2 instances for load balancing
-  selector:
-    matchLabels:
-      app: taskmanager
-  template:
-    metadata:
-      labels:
-        app: taskmanager
-    spec:
-      containers:
-      - name: taskmanager
-        # Use the image from your CI/CD pipeline (Day 3)
-        image: your-dockerhub-username/task-manager:latest
-        ports:
-        - containerPort: 8000
-        env:
-        - name: DATABASE_URL
-          value: "postgresql://dbuser:dbpass123@postgres-service:5432/taskmanager"
-        - name: SECRET_KEY
-          value: "kubernetes-secret-key"
----
-# Task Manager Service
-apiVersion: v1
-kind: Service
-metadata:
-  name: taskmanager-service
-spec:
-  selector:
-    app: taskmanager
-  ports:
-  - port: 80
-    targetPort: 8000
-  type: LoadBalancer  # Exposes the service externally
-```
-
-#### Step 4: Deploy to Kubernetes
+#### Step 2: Create Your Personal Namespace
 ```bash
-# Deploy PostgreSQL first
-kubectl apply -f k8s/02-postgres.yaml
+# Create your personalized namespace file
+sed "s/STUDENT_NUMBER/$STUDENT_NUMBER/g" 01-namespace.yaml > my-namespace.yaml
 
-# Wait for PostgreSQL to be ready
-kubectl get pods -l app=postgres
+# Create the namespace in Kubernetes
+kubectl apply -f my-namespace.yaml
 
-# Deploy Task Manager
-kubectl apply -f k8s/03-taskmanager.yaml
+# Verify namespace creation
+kubectl get namespace $STUDENT_NUMBER
 
-# Check all resources
-kubectl get all
+# ⭐ IMPORTANT: Set up namespace context to avoid using -n every time
+kubectl config set-context $STUDENT_NUMBER \
+  --cluster=$(kubectl config view -o jsonpath='{.current-context}') \
+  --user=$(kubectl config view -o jsonpath='{.current-context}') \
+  --namespace=$STUDENT_NUMBER
 
-# Expected output shows deployments, pods, services
-NAME                                         READY   STATUS    RESTARTS   AGE
-pod/postgres-deployment-xxx                  1/1     Running   0          2m
-pod/taskmanager-deployment-xxx               1/1     Running   0          1m
-pod/taskmanager-deployment-yyy               1/1     Running   0          1m
+# Switch to your personal context
+kubectl config use-context $STUDENT_NUMBER
 
-NAME                           TYPE           CLUSTER-IP      EXTERNAL-IP   PORT(S)        AGE
-service/postgres-service       ClusterIP      10.96.158.31    <none>        5432/TCP       2m
-service/taskmanager-service    LoadBalancer   10.96.241.45    <pending>     80:32000/TCP   1m
+# Verify your context setup
+echo "Current context: $(kubectl config current-context)"
+echo "Current namespace: $(kubectl config view --minify -o jsonpath='{..namespace}')"
+
+# Test - these commands now work in your namespace automatically!
+kubectl get pods        # No need for -n $STUDENT_NUMBER
+kubectl get services    # No need for -n $STUDENT_NUMBER
+```
+#### Step 3: Configure Your Personal Deployment
+```bash
+# Create personalized deployment file
+sed -e "s/STUDENT_NUMBER/$STUDENT_NUMBER/g" \
+    -e "s/YOUR_DOCKERHUB_USERNAME/$DOCKERHUB_USERNAME/g" \
+    -e "s/VM_IP_ADDRESS/$VM_IP/g" \
+    03-taskmanager.yaml > my-taskmanager.yaml
+
+# Create personalized ingress file
+sed "s/STUDENT_NUMBER/$STUDENT_NUMBER/g" 04-ingress.yaml > my-ingress.yaml
+
+# Review your personalized files
+echo "=== Your Deployment Configuration ==="
+grep -E "(namespace|image|DATABASE_URL|host)" my-taskmanager.yaml my-ingress.yaml
 ```
 
-#### Step 5: Access Your Application
+#### Step 4: Deploy Your Application
 ```bash
-# For minikube, get the service URL
-minikube service taskmanager-service --url
+# Deploy the Task Manager application (no -n needed thanks to context!)
+kubectl apply -f my-taskmanager.yaml
 
-# Or use port forwarding
+# Check if pods are starting in your namespace
+kubectl get pods
+
+# Watch the deployment progress
+kubectl get pods -w
+
+# Expected output (after a minute):
+NAME                                     READY   STATUS    RESTARTS   AGE
+taskmanager-deployment-xxx               1/1     Running   0          2m
+taskmanager-deployment-yyy               1/1     Running   0          2m
+```
+
+#### Step 5: Set Up External Access
+```bash
+# Deploy your personal ingress
+kubectl apply -f my-ingress.yaml
+
+# Add your personal domain to hosts file (Linux/Mac)
+echo "127.0.0.1 taskmanager-$STUDENT_NUMBER.local" | sudo tee -a /etc/hosts
+
+# For Windows users, add this line to C:\Windows\System32\drivers\etc\hosts:
+# 127.0.0.1 taskmanager-YOURSTUDENTNO.local
+
+# For minikube users, enable tunnel (keep running in separate terminal)
+minikube tunnel
+```
+
+#### Step 6: Access Your Personal Application
+```bash
+# Method 1: Via your personal Ingress domain
+curl http://taskmanager-$STUDENT_NUMBER.local
+# Or visit in browser: http://taskmanager-YOURSTUDENTNO.local
+
+# Method 2: Via port-forward (if Ingress doesn't work)
 kubectl port-forward service/taskmanager-service 8080:80
+# Then visit: http://localhost:8080
 
-# Visit http://localhost:8080 in your browser
+# Method 3: Check service status
+kubectl get ingress
+kubectl get services
+```
+
+#### Step 7: Verify Database Connectivity
+```bash
+# Check application logs for database connection
+kubectl logs -l app=taskmanager
+
+# If there are connection issues, troubleshoot:
+kubectl describe pods -l app=taskmanager
+
+# Test database connectivity from your pods
+POD_NAME=$(kubectl get pods -l app=taskmanager -o jsonpath='{.items[0].metadata.name}')
+kubectl exec -it $POD_NAME -- ping $VM_IP
+kubectl exec -it $POD_NAME -- telnet $VM_IP 5432
 ```
 
 ### Exercise 4: Scaling and Updates
 
-#### Scaling Your Application
+#### Scaling Your Personal Application
 ```bash
-# Scale up to 5 replicas
+# Scale up to 5 replicas in your namespace
 kubectl scale deployment taskmanager-deployment --replicas=5
 
-# Check the scaling
+# Check the scaling progress
 kubectl get pods -l app=taskmanager
 
-# Scale back down
+# Watch pods being created
+kubectl get pods -w
+
+# Scale back down to 2
 kubectl scale deployment taskmanager-deployment --replicas=2
+
+# Verify scaling
+kubectl get deployments
 ```
 
 #### Rolling Updates
 ```bash
 # Update to a new image version (from your CI/CD pipeline)
-kubectl set image deployment/taskmanager-deployment taskmanager=your-username/task-manager:new-version
+kubectl set image deployment/taskmanager-deployment \
+  taskmanager=$DOCKERHUB_USERNAME/task-manager:new-version
 
-# Watch the rolling update
+# Watch the rolling update progress
 kubectl rollout status deployment/taskmanager-deployment
 
 # Check rollout history
@@ -481,6 +500,63 @@ kubectl rollout history deployment/taskmanager-deployment
 
 # Rollback if needed
 kubectl rollout undo deployment/taskmanager-deployment
+```
+
+#### Monitor Your Personal Deployment
+```bash
+# Check all your resources (automatically in your namespace!)
+kubectl get all
+
+# Check resource usage (if metrics-server is available)
+kubectl top pods
+
+# View logs from your application
+kubectl logs -l app=taskmanager
+
+# Describe your deployment
+kubectl describe deployment taskmanager-deployment
+
+# All these commands now work in your namespace without -n flag!
+```
+
+#### Clean Up Your Personal Environment
+```bash
+# Option 1: Delete individual resources
+kubectl delete -f my-ingress.yaml
+kubectl delete -f my-taskmanager.yaml
+
+# Option 2: Delete entire namespace (removes everything)
+# ⚠️ Note: This will switch you back to default context
+kubectl delete namespace $STUDENT_NUMBER
+
+# Remove from hosts file (Linux/Mac)
+sudo sed -i "/taskmanager-$STUDENT_NUMBER.local/d" /etc/hosts
+
+# Switch back to default context after cleanup
+kubectl config use-context default
+
+# Verify cleanup (this will show "No resources found" since namespace is gone)
+kubectl get all --namespace $STUDENT_NUMBER
+```
+
+#### Context Management Tips for Workshop
+```bash
+# Quick reference commands you'll use frequently:
+
+# Check what namespace you're currently in
+kubectl config view --minify -o jsonpath='{..namespace}'
+
+# Switch to your student context
+kubectl config use-context $STUDENT_NUMBER
+
+# Switch to default/shared context (if needed)
+kubectl config use-context default
+
+# List all available contexts
+kubectl config get-contexts
+
+# If you accidentally switch contexts, get back to your namespace:
+kubectl config set-context --current --namespace=$STUDENT_NUMBER
 ```
 
 ### Exercise 5: Debugging and Troubleshooting
@@ -533,13 +609,32 @@ kubectl logs <pod-name> --previous
 # - Missing dependencies
 ```
 
-**Issue 3: Service not accessible**
+**Issue: Service not accessible**
 ```bash
-# Check if service endpoints exist
+# Check service endpoints
 kubectl get endpoints
 
 # Test connectivity from inside cluster
 kubectl run test-pod --image=busybox --rm -it --restart=Never -- wget -qO- http://taskmanager-service
+
+# For external database connectivity issues
+kubectl exec -it <pod-name> -- ping <VM_IP_ADDRESS>
+kubectl exec -it <pod-name> -- telnet <VM_IP_ADDRESS> 5432
+```
+
+**Issue: Database connection refused**
+```bash
+# Check if PostgreSQL is accepting connections on the VM
+# On the VM:
+sudo systemctl status postgresql
+sudo netstat -tlnp | grep 5432
+
+# Check PostgreSQL configuration
+sudo cat /etc/postgresql/*/main/postgresql.conf | grep listen_addresses
+sudo cat /etc/postgresql/*/main/pg_hba.conf | grep host
+
+# Make sure PostgreSQL allows connections from Kubernetes pods
+# Add to pg_hba.conf: host all all <KUBERNETES_NETWORK>/24 md5
 ```
 
 ---
@@ -548,59 +643,84 @@ kubectl run test-pod --image=busybox --rm -it --restart=Never -- wget -qO- http:
 
 ### ConfigMaps and Secrets (Better Configuration Management)
 
-Instead of hardcoding environment variables, use Kubernetes native configuration:
+Let's explore how to properly manage configuration in Kubernetes using the sample files.
 
-#### Step 1: Create ConfigMap for Application Settings
-Create `k8s/04-configmap.yaml`:
-```yaml
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: taskmanager-config
-data:
-  # Non-sensitive configuration
-  DEBUG: "False"
-  LOG_LEVEL: "INFO"
-  MAX_CONNECTIONS: "100"
+#### Step 1: Explore Sample Configuration Files
+```bash
+# Navigate to the sample directory
+cd ../k8s-sample
+
+# View the sample ConfigMap (safe to commit to Git)
+cat configmap-sample.yaml
+
+# View the sample Secret (⚠️ NEVER commit real secrets!)
+cat secret-sample.yaml
+
+# Read the security guidelines
+cat README.md
 ```
 
-#### Step 2: Create Secret for Sensitive Data
-Create `k8s/05-secrets.yaml`:
-```yaml
-apiVersion: v1
-kind: Secret
-metadata:
-  name: taskmanager-secrets
-type: Opaque
-data:
-  # Base64 encoded values
-  SECRET_KEY: a3ViZXJuZXRlcy1zZWNyZXQta2V5  # "kubernetes-secret-key"
-  DB_PASSWORD: ZGJwYXNzMTIz                     # "dbpass123"
+#### Step 2: Create Sample Resources (Learning Only)
+```bash
+# Create the sample ConfigMap
+kubectl apply -f configmap-sample.yaml
+
+# Create the sample Secret (educational purposes only!)
+kubectl apply -f secret-sample.yaml
+
+# View created resources
+kubectl get configmaps
+kubectl get secrets
 ```
 
-#### Step 3: Update Deployment to Use ConfigMap and Secrets
+#### Step 3: Inspect the Resources
+```bash
+# View ConfigMap contents (visible)
+kubectl describe configmap app-config
+
+# View Secret metadata (data hidden for security)
+kubectl describe secret app-secrets
+
+# Decode a secret value (learning only)
+kubectl get secret app-secrets -o jsonpath='{.data.DB_USERNAME}' | base64 -d
+```
+
+#### Step 4: Create Production-Ready Secrets
+Instead of YAML files, create secrets securely:
+```bash
+# Create secrets from command line (recommended)
+kubectl create secret generic taskmanager-secrets \
+  --from-literal=SECRET_KEY=your-production-secret-key \
+  --from-literal=DB_PASSWORD=your-vm-db-password
+
+# Verify the secret was created
+kubectl get secrets taskmanager-secrets
+```
+
+#### Step 5: Update Task Manager to Use Secrets
+```bash
+# Go back to main k8s directory
+cd ../k8s
+
+# Edit the taskmanager deployment to use the secret
+# Replace the hardcoded SECRET_KEY and DB_PASSWORD with secret references
+```
+
+Here's how to update the deployment to use secrets:
 ```yaml
-# Update k8s/03-taskmanager.yaml
-spec:
-  containers:
-  - name: taskmanager
-    image: your-username/task-manager:latest
-    env:
-    - name: DATABASE_URL
-      value: "postgresql://dbuser:$(DB_PASSWORD)@postgres-service:5432/taskmanager"
-    - name: SECRET_KEY
-      valueFrom:
-        secretKeyRef:
-          name: taskmanager-secrets
-          key: SECRET_KEY
-    - name: DEBUG
-      valueFrom:
-        configMapKeyRef:
-          name: taskmanager-config
-          key: DEBUG
-    envFrom:
-    - configMapRef:
-        name: taskmanager-config
+env:
+- name: DATABASE_URL
+  value: "postgresql://dbuser:$(DB_PASSWORD)@<VM_IP>:5432/taskmanager"
+- name: SECRET_KEY
+  valueFrom:
+    secretKeyRef:
+      name: taskmanager-secrets
+      key: SECRET_KEY
+- name: DB_PASSWORD
+  valueFrom:
+    secretKeyRef:
+      name: taskmanager-secrets
+      key: DB_PASSWORD
 ```
 
 ### Kubernetes + CI/CD Integration (If Time Permits)
@@ -717,10 +837,13 @@ spec:
 ### Individual Checkpoints
 Each student should have:
 - [ ] Successfully set up a local Kubernetes environment
-- [ ] Deployed the Task Manager application to Kubernetes
+- [ ] Deployed the Task Manager application to Kubernetes with external PostgreSQL on VM
+- [ ] Configured proper database connectivity between Kubernetes and VM
 - [ ] Scaled the application up and down
 - [ ] Understood the relationship between Pods, Deployments, and Services
-- [ ] Troubleshot at least one common Kubernetes issue
+- [ ] Explored ConfigMaps and Secrets for configuration management
+- [ ] Set up Ingress for external access
+- [ ] Troubleshot common Kubernetes and connectivity issues
 - [ ] Understood how Kubernetes integrates with CI/CD (if covered)
 
 ### Key Takeaways
@@ -730,61 +853,53 @@ Each student should have:
 4. **Production readiness** - Foundation for running applications at enterprise scale
 5. **CI/CD integration** - Natural extension of automated deployment pipelines
 
-### Real-World Applications
-- **High availability** - Applications run across multiple servers
-- **Zero-downtime deployments** - Update applications without service interruption
-- **Auto-scaling** - Handle traffic spikes automatically
-- **Resource efficiency** - Better utilization of infrastructure
-- **Portability** - Run anywhere Kubernetes runs (cloud, on-premise)
+## Architecture Overview
+
+### Workshop Infrastructure
+```
+┌─────────────────┐    ┌──────────────────────────────┐
+│  PostgreSQL VM  │    │       Kubernetes Cluster     │
+│                 │    │                              │
+│  ┌──────────┐   │    │  ┌─────────┐  ┌─────────┐   │
+│  │PostgreSQL│   │    │  │  Pod 1  │  │  Pod 2  │   │
+│  │Port: 5432│◄──┼────┼──┤Task Mgr │  │Task Mgr │   │
+│  └──────────┘   │    │  └─────────┘  └─────────┘   │
+│                 │    │       ▲                     │
+└─────────────────┘    │       │                     │
+                       │  ┌─────────┐                │
+                       │  │ Service │                │
+                       │  │(LoadBal)│                │
+                       │  └─────────┘                │
+                       │       ▲                     │
+                       │  ┌─────────┐                │
+                       │  │ Ingress │                │
+                       │  │Controller│                │
+                       │  └─────────┘                │
+                       └──────────▲───────────────────┘
+                                  │
+                            External Traffic
+                         (taskmanager.local)
+```
+
+This architecture demonstrates:
+- **Separation of concerns**: Database on VM, application in Kubernetes
+- **Hybrid infrastructure**: Mix of traditional VMs and container orchestration  
+- **External connectivity**: Kubernetes pods connecting to external services
+- **Production patterns**: How real applications often integrate existing infrastructure
 
 ---
 
 ## Complete Kubernetes Manifests
 
 ### All-in-One Deployment File
-Create `k8s/complete-app.yaml`:
+Since PostgreSQL runs on a VM, here's a simplified deployment file for the Task Manager application only.
+
+Create this as a reference - `k8s/taskmanager-complete.yaml`:
 ```yaml
-# PostgreSQL Deployment
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: postgres
-spec:
-  replicas: 1
-  selector:
-    matchLabels:
-      app: postgres
-  template:
-    metadata:
-      labels:
-        app: postgres
-    spec:
-      containers:
-      - name: postgres
-        image: postgres:15
-        env:
-        - name: POSTGRES_DB
-          value: taskmanager
-        - name: POSTGRES_USER
-          value: dbuser
-        - name: POSTGRES_PASSWORD
-          value: dbpass123
-        ports:
-        - containerPort: 5432
----
-# PostgreSQL Service
-apiVersion: v1
-kind: Service
-metadata:
-  name: postgres
-spec:
-  selector:
-    app: postgres
-  ports:
-  - port: 5432
-  type: ClusterIP
----
-# Task Manager Deployment
+# Task Manager Application - Complete Deployment
+# PostgreSQL runs on external VM
+
+# Deployment - Manages the application pods
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -806,7 +921,7 @@ spec:
         - containerPort: 8000
         env:
         - name: DATABASE_URL
-          value: "postgresql://dbuser:dbpass123@postgres:5432/taskmanager"
+          value: "postgresql://dbuser:dbpass123@<VM_IP_ADDRESS>:5432/taskmanager"
         - name: SECRET_KEY
           value: "kubernetes-secret"
         livenessProbe:
@@ -819,8 +934,15 @@ spec:
             path: /
             port: 8000
           initialDelaySeconds: 5
+        resources:
+          requests:
+            memory: "128Mi"
+            cpu: "100m"
+          limits:
+            memory: "256Mi"
+            cpu: "200m"
 ---
-# Task Manager Service
+# Service - Provides internal networking
 apiVersion: v1
 kind: Service
 metadata:
@@ -831,30 +953,64 @@ spec:
   ports:
   - port: 80
     targetPort: 8000
-  type: LoadBalancer
+  type: ClusterIP
+---
+# Ingress - Provides external access
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: taskmanager-ingress
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+spec:
+  rules:
+  - host: taskmanager.local
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: taskmanager
+            port:
+              number: 80
 ```
 
 ### Quick Deploy Commands
 ```bash
-# Deploy everything
-kubectl apply -f k8s/complete-app.yaml
+# Navigate to the k8s directory
+cd k8s
+
+# Update the Docker image name and VM IP address
+sed -i 's/your-dockerhub-username/YOUR_ACTUAL_USERNAME/g' 03-taskmanager.yaml
+sed -i 's/<VM_IP_ADDRESS>/YOUR_VM_IP/g' 03-taskmanager.yaml
+
+# Deploy the application
+kubectl apply -f 03-taskmanager.yaml
+
+# Deploy ingress for external access
+kubectl apply -f 04-ingress.yaml
 
 # Check status
 kubectl get all
 
-# Access application
-minikube service taskmanager --url
-# or
-kubectl port-forward service/taskmanager 8080:80
+# Access application via port-forward
+kubectl port-forward service/taskmanager-service 8080:80
+
+# Or via ingress (after setting up hosts file)
+echo "127.0.0.1 taskmanager.local" | sudo tee -a /etc/hosts
+# Visit http://taskmanager.local
 
 # Scale application
-kubectl scale deployment taskmanager --replicas=5
+kubectl scale deployment taskmanager-deployment --replicas=5
 
 # Update application
-kubectl set image deployment/taskmanager app=your-username/task-manager:new-version
+kubectl set image deployment/taskmanager-deployment \
+  taskmanager=your-username/task-manager:new-version
 
 # Clean up
-kubectl delete -f k8s/complete-app.yaml
+kubectl delete -f 03-taskmanager.yaml
+kubectl delete -f 04-ingress.yaml
 ```
 
 ---
@@ -929,3 +1085,131 @@ kubectl port-forward service/taskmanager 8080:80
 - **Day 4**: Kubernetes container orchestration
 
 **You're now ready to build and deploy modern cloud-native applications! 🚀**
+
+---
+
+## Appendix: Hashing vs Encryption vs Encoding
+
+### Understanding Hashing, Encryption, and Encoding
+
+As DevOps engineers, you'll frequently work with sensitive data like passwords, API keys, and certificates. Understanding the differences between hashing, encryption, and encoding is crucial for proper security implementation.
+
+| Aspect             | **Hashing**                       | **Encryption**              | **Encoding**          |
+| ------------------ | --------------------------------- | --------------------------- | --------------------- |
+| **Purpose**        | Data integrity & password storage | Data confidentiality        | Data representation   |
+| **Reversible**     | ❌ No (one-way function)           | ✅ Yes (with key)            | ✅ Yes (no key needed) |
+| **Key Required**   | ❌ No                              | ✅ Yes (secret key)          | ❌ No                  |
+| **Security Focus** | Integrity & authentication        | Confidentiality             | Compatibility         |
+| **Output Length**  | Fixed (e.g., 32 chars for MD5)    | Variable (depends on input) | Variable              |
+
+### **1. Hashing - One-Way Data Integrity**
+
+**What it does:** Converts input data into a fixed-length string (digest) that cannot be reversed.
+
+**Common Algorithms:** MD5, SHA-256, SHA-512, bcrypt, Argon2
+
+**Examples:**
+```bash
+# SHA-256 hash example
+echo "password123" | sha256sum
+# Output: ef92b778bafe771e89245b89ecbc08a44a4e166c06659911881f383d4473e94f
+
+# Same input always produces same hash
+echo "password123" | sha256sum
+# Output: ef92b778bafe771e89245b89ecbc08a44a4e166c06659911881f383d4473e94f
+
+# Different input produces completely different hash  
+echo "password124" | sha256sum
+# Output: 8bb0cf6eb9b17d0f7d22b456f121257dc1254e1f01665370476383ea776df414
+```
+
+**Use Cases:**
+- **Password storage** in databases
+- **File integrity verification** (checksums)
+- **Git commit IDs** (Git uses SHA-1)
+- **Docker image layers** identification
+- **API token generation**
+
+
+### **2. Encryption - Reversible Data Protection**
+
+**What it does:** Transforms data using a secret key, making it unreadable without the key.
+
+**Types:**
+- **Symmetric:** Same key for encryption and decryption (AES)
+- **Asymmetric:** Different keys for encryption and decryption (RSA)
+
+**Examples:**
+```bash
+# Symmetric encryption with OpenSSL
+echo "sensitive data" | openssl enc -aes-256-cbc -a -salt -k "mypassword"
+# Output: U2FsdGVkX18rKz... (encrypted data)
+
+# Decrypt the data
+echo "U2FsdGVkX18rKz..." | openssl enc -aes-256-cbc -a -d -k "mypassword"  
+# Output: sensitive data
+```
+
+**Use Cases:**
+- **API keys and tokens** in CI/CD pipelines  
+- **TLS/SSL certificates** for HTTPS
+- **Container image secrets** (Docker secrets)
+- **Kubernetes secrets** (encrypted at rest)
+- **Encrypted storage volumes**
+
+
+### **3. Encoding - Data Format Conversion**
+
+**What it does:** Converts data from one format to another for compatibility, not security.
+
+**Common Types:** Base64, URL encoding, ASCII, UTF-8
+
+**Examples:**
+```bash
+# Base64 encoding (common in Kubernetes)
+echo "Hello World" | base64
+# Output: SGVsbG8gV29ybGQK
+
+# Base64 decoding
+echo "SGVsbG8gV29ybGQK" | base64 -d
+# Output: Hello World
+```
+
+**DevOps Use Cases:**
+- **Kubernetes secrets** (Base64 encoded, not encrypted!)
+- **Docker image layers** (tar + gzip encoding)
+- **Configuration files** (YAML, JSON formatting)
+- **Log file compression** (gzip, zip)
+- **Binary data transmission** (Base64 in APIs)
+
+**Example in Practice:**
+```yaml
+# Kubernetes Secret with Base64 encoding
+apiVersion: v1
+kind: Secret
+metadata:
+  name: my-secret
+data:
+  username: YWRtaW4=        # "admin" in Base64
+  password: cGFzc3dvcmQ=    # "password" in Base64
+```
+
+### **Security Implications**
+
+| Scenario                 | ❌ Wrong Approach      | ✅ Correct Approach                      |
+| ------------------------ | --------------------- | --------------------------------------- |
+| **Storing passwords**    | Plain text or Base64  | Hashed with bcrypt/Argon2               |
+| **API keys in code**     | Hardcoded strings     | Encrypted secrets/env vars              |
+| **Database connections** | Plain text configs    | Encrypted connection strings            |
+| **Container secrets**    | Environment variables | Kubernetes secrets + encryption at rest |
+| **CI/CD credentials**    | Repository files      | Encrypted pipeline secrets              |
+
+### **Key Takeaways Security**
+
+1. **Use hashing for**: Password storage, file integrity, unique identifiers
+2. **Use encryption for**: Sensitive data that needs to be retrieved later
+3. **Use encoding for**: Data format compatibility, not security
+4. **Never rely on encoding (like Base64) for security** - it's easily reversible
+5. **Always encrypt secrets at rest and in transit** in production systems
+6. **Use proper key management** - rotate keys regularly, use key vaults
+7. **Implement defense in depth** - combine multiple security layers

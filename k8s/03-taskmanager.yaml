@@ -1,0 +1,80 @@
+# Task Manager Application Deployment and Service
+# This file creates the main application deployment and exposes it via a service
+# 📝 IMPORTANT: Replace STUDENT_NUMBER with your actual student number (e.g., 0215539)
+
+# Deployment - Manages the Task Manager application Pods
+apiVersion: apps/v1        # API version for Deployment resources
+kind: Deployment          # Resource type - manages application replicas
+metadata:                 # Information about this Deployment
+  name: taskmanager-deployment
+  namespace: STUDENT_NUMBER    # 📝 Replace STUDENT_NUMBER with your number
+  labels:                 # Labels for organizing resources
+    app: taskmanager
+    component: frontend
+    version: v1
+    student: "STUDENT_NUMBER"  # 📝 Replace with your student number
+spec:                     # Desired state specification
+  replicas: 2             # Run 2 copies for high availability and load distribution
+  selector:               # How to find Pods managed by this Deployment
+    matchLabels:          # Pods must have these labels
+      app: taskmanager
+  template:               # Template for creating new Pods
+    metadata:             # Labels applied to each Pod
+      labels:
+        app: taskmanager  # Must match selector above
+        version: v1
+    spec:                 # Pod specification
+      containers:         # Containers in each Pod
+      - name: taskmanager # Container name
+        # Docker image from your CI/CD pipeline (update with your DockerHub username)
+        image: YOUR_DOCKERHUB_USERNAME/task-manager:latest
+        ports:                    # Ports exposed by container
+        - containerPort: 8000     # Port the Flask app listens on
+          name: http             # Named port for Service reference
+        env:                      # Environment variables
+        - name: DATABASE_URL      # Database connection string
+          value: "postgresql://dbuser:dbpass123@VM_IP_ADDRESS:5432/taskmanager"
+        - name: SECRET_KEY        # Flask secret key
+          value: "kubernetes-secret-key-STUDENT_NUMBER"  # 📝 Replace STUDENT_NUMBER
+        - name: FLASK_ENV
+          value: "production"
+        resources:                # Resource management
+          requests:               # Guaranteed resources
+            memory: "128Mi"       # 128 Mebibytes memory
+            cpu: "100m"          # 100 millicores CPU
+          limits:                 # Maximum resources
+            memory: "256Mi"       # 256 Mebibytes max memory
+            cpu: "200m"          # 200 millicores max CPU
+        # Health checks to ensure container is working properly
+        livenessProbe:            # Restart container if this fails
+          httpGet:                # HTTP health check
+            path: /               # Check root path
+            port: http           # Use named port from above
+          initialDelaySeconds: 30 # Wait 30 seconds after start
+          periodSeconds: 10       # Check every 10 seconds
+        readinessProbe:           # Remove from service if this fails
+          httpGet:
+            path: /
+            port: http
+          initialDelaySeconds: 5  # Check after 5 seconds
+          periodSeconds: 5        # Check every 5 seconds
+---
+# Service - Provides stable network access to the Task Manager Pods
+apiVersion: v1             # API version for Service resources
+kind: Service             # Resource type - network abstraction
+metadata:                 # Service information
+  name: taskmanager-service
+  namespace: STUDENT_NUMBER    # 📝 Replace STUDENT_NUMBER with your number
+  labels:
+    app: taskmanager
+    student: "STUDENT_NUMBER"  # 📝 Replace with your student number
+spec:                     # Service specification
+  selector:               # Target Pods with these labels
+    app: taskmanager
+  ports:                  # Port configuration
+  - port: 80             # Port exposed by the Service (external)
+    targetPort: http     # Port on target Pods (refers to named port)
+    protocol: TCP        # Network protocol
+    name: http          # Name for this port mapping
+  type: ClusterIP        # Service type - accessible only within cluster
+                        # Change to LoadBalancer for external access

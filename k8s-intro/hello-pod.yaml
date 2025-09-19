@@ -1,0 +1,25 @@
+# Pod - The smallest deployable unit in Kubernetes
+# A Pod wraps one or more containers and provides shared networking and storage
+apiVersion: v1          # API version - tells Kubernetes which version of the API to use
+kind: Pod              # Resource type - what kind of Kubernetes object this is
+metadata:              # Information about the object (name, labels, etc.)
+  name: hello-pod      # The name of this Pod (must be unique in the namespace)
+  labels:              # Key-value pairs to organize and select resources
+    app: hello         # Label to identify this Pod (used by Services to find Pods)
+    purpose: learning  # Additional label for organization
+spec:                  # The desired state - what we want this Pod to look like
+  containers:          # List of containers to run in this Pod
+  - name: hello-container    # Name of the container (unique within the Pod)
+    image: nginx:alpine      # Docker image to use (from Docker Hub)
+    ports:                   # Ports that the container exposes
+    - containerPort: 80      # Port that nginx listens on inside the container
+    env:                     # Environment variables to set in the container
+    - name: WELCOME_MESSAGE  # Environment variable name
+      value: "Hello from Kubernetes Pod!"  # Environment variable value
+    resources:               # Resource requests and limits
+      requests:              # Minimum resources guaranteed to this container
+        memory: "64Mi"       # 64 Mebibytes of memory
+        cpu: "50m"          # 50 millicores (0.05 CPU cores)
+      limits:                # Maximum resources this container can use
+        memory: "128Mi"      # 128 Mebibytes of memory
+        cpu: "100m"         # 100 millicores (0.1 CPU cores)

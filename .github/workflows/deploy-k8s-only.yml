@@ -1,0 +1,93 @@
+name: Deploy K8s Config Only
+
+on:
+  workflow_dispatch:
+    inputs:
+      reason:
+        description: 'Reason for deployment (e.g., "Scale replicas to 3", "Update environment variables")'
+        required: true
+        type: string
+  push:
+    paths:
+      - 'k8s/**'
+    branches: [ main ]
+
+jobs:
+  deploy-config:
+    name: Deploy Kubernetes Configuration
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v5
+
+      - name: Set up kubectl
+        uses: azure/setup-kubectl@v4
+
+      - name: Configure kubeconfig
+        run: |
+          mkdir -p ~/.kube
+          echo "${{ secrets.KUBE_CONFIG }}" | base64 -d > ~/.kube/config
+          chmod 600 ~/.kube/config
+
+
+      - name: Show deployment reason (if manually triggered)
+        if: github.event_name == 'workflow_dispatch'
+        run: |
+          echo "🎯 Manual deployment triggered"
+          echo "📝 Reason: ${{ github.event.inputs.reason }}"
+
+      - name: Validate Kubernetes manifests
+        run: |
+          echo "🔍 Validating Kubernetes manifests..."
+          for file in k8s/*.yaml k8s/*.yml; do
+            if [ -f "$file" ]; then
+              echo "Validating $file..."
+              kubectl apply --dry-run=client -f "$file"
+            fi
+          done
+          echo "✅ All manifests are valid"
+
+      - name: Apply Kubernetes configuration
+        run: |
+          echo "🚀 Applying Kubernetes configuration..."
+          
+          # Apply all manifests
+          kubectl apply -f k8s/
+          
+          echo "✅ Configuration applied successfully"
+
+      - name: Check deployment status
+        run: |
+          echo "📊 Checking deployment status..."
+          
+          # Wait for any deployments to be ready
+          if kubectl get deployment taskmanager-deployment 2>/dev/null; then
+            echo "⏳ Waiting for taskmanager-deployment rollout..."
+            kubectl rollout status deployment/taskmanager-deployment --timeout=300s
+          fi
+          
+          # Show current status
+          echo ""
+          echo "📈 Current cluster status:"
+          kubectl get all -l app=taskmanager
+          
+          echo ""
+          echo "🏷️  Pod details:"
+          kubectl describe pods -l app=taskmanager | grep -E "Name:|Status:|Image:|Replicas:"
+
+      - name: Deployment Summary
+        run: |
+          echo "🎉 Kubernetes configuration deployment completed!"
+          echo "📅 Deployed at: $(date)"
+          echo "🏷️  Git SHA: ${{ github.sha }}"
+          
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "📝 Reason: ${{ github.event.inputs.reason }}"
+          fi
+          
+          echo ""
+          echo "🔧 Quick commands to check your deployment:"
+          echo "   kubectl get all -l app=taskmanager"
+          echo "   kubectl describe deployment taskmanager-deployment"
+          echo "   kubectl logs -l app=taskmanager --tail=50"

@@ -1,0 +1,15 @@
+# Namespace for Individual Student Deployment
+# Each student gets their own namespace to avoid conflicts
+# 📝 IMPORTANT: Replace STUDENT_NUMBER with your actual student number (e.g., 0215539)
+
+apiVersion: v1              # API version for Namespace resources
+kind: Namespace            # Resource type - logical cluster partition
+metadata:                  # Namespace information
+  name: STUDENT_NUMBER    # 📝 Replace STUDENT_NUMBER (e.g., 0215539)
+  labels:                  # Labels for organization and management
+    purpose: workshop      # This namespace is for workshop activities
+    student: "STUDENT_NUMBER"  # 📝 Replace with your student number
+    type: individual       # Individual student namespace
+  annotations:             # Additional metadata
+    description: "Kubernetes workshop namespace for student STUDENT_NUMBER"
+    workshop-date: "2025-09-18"

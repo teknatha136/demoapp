@@ -1,0 +1,53 @@
+# Ingress - Manages external HTTP/HTTPS access to services
+# Ingress provides load balancing, SSL termination, and name-based virtual hosting
+# 📝 IMPORTANT: Replace STUDENT_NUMBER with your actual student number (e.g., 0215539)
+
+apiVersion: networking.k8s.io/v1  # API version for Ingress resources
+kind: Ingress                     # Resource type - HTTP routing rules
+metadata:                         # Ingress information
+  name: taskmanager-ingress
+  namespace: STUDENT_NUMBER    # 📝 Replace STUDENT_NUMBER with your number
+  labels:
+    app: taskmanager
+    student: "STUDENT_NUMBER"  # 📝 Replace with your student number
+  annotations:                    # Additional configuration via annotations
+    # Ingress controller specific settings (these are for nginx-ingress)
+    nginx.ingress.kubernetes.io/rewrite-target: /
+    # Force HTTPS redirect (uncomment for production with SSL)
+    # nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    
+    # Rate limiting (optional)
+    # nginx.ingress.kubernetes.io/rate-limit: "100"
+    
+    # Enable CORS (optional)
+    # nginx.ingress.kubernetes.io/enable-cors: "true"
+spec:                             # Ingress specification
+  # Uncomment for HTTPS/TLS (requires certificate)
+  # tls:                          # TLS configuration
+  # - hosts:
+  #   - STUDENT_NUMBER.cstapp.site
+  #   secretName: taskmanager-tls  # Secret containing TLS certificate
+  
+  rules:                          # Routing rules
+  - host: STUDENT_NUMBER.cstapp.site  # 📝 Replace STUDENT_NUMBER (e.g., taskmanager-0215539.local)
+    http:                         # HTTP routing rules
+      paths:                      # URL path routing
+      - path: /                   # Root path and all subpaths
+        pathType: Prefix          # Path matching type (Prefix, Exact, or ImplementationSpecific)
+        backend:                  # Where to send matching requests
+          service:                # Target service
+            name: taskmanager-service  # Service name (must be in same namespace)
+            port:                 # Service port
+              number: 80          # Port number on the service
+  
+  # Additional routing rules (examples)
+  # - host: api.taskmanager.local    # API subdomain
+  #   http:
+  #     paths:
+  #     - path: /api
+  #       pathType: Prefix
+  #       backend:
+  #         service:
+  #           name: taskmanager-service
+  #           port:
+  #             number: 80
